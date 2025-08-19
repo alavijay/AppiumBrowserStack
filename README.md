@@ -6,8 +6,6 @@ Create free account on browser stack
 # Set up
 
 Download the repo
-Update Browserstack username and accesscode
+Update Browserstack USERNAME and ACCESS_KEY in AppTest.java
 
-`mvn clean install` - to fetch dependencies 
-
-`mvn test` - to run tests
+`mvn clean install` - to fetch dependencies and run test
