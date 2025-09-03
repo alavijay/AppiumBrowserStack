@@ -1,8 +1,8 @@
 package com.appuim;
 
 import io.appium.java_client.AppiumBy;
-import io.appium.java_client.android.AndroidDriver;
-import io.appium.java_client.android.options.UiAutomator2Options;
+import io.appium.java_client.ios.IOSDriver;
+import io.appium.java_client.ios.options.XCUITestOptions;
 import okhttp3.*;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
@@ -20,19 +20,19 @@ import java.net.URL;
 import java.time.Duration;
 import java.util.HashMap;
 
-public class AppTest {
-    private AndroidDriver driver;
+public class TheAppTest {
+    private IOSDriver driver; // Change to IOSDriver
 
-    public static final String USERNAME = "XXXXXXX"; // Replace with your BrowserStack username
-    public static final String ACCESS_KEY = "XXXXXXX"; // Replace with your BrowserStack access key
+    public static final String USERNAME = "XXXXX"; // Replace with your BrowserStack username
+    public static final String ACCESS_KEY = "XXXX"; // Replace with your BrowserStack access key
     public static final String BROWSERSTACK_URL = "https://" + USERNAME + ":" + ACCESS_KEY + "@hub-cloud.browserstack.com/wd/hub";
 
     @BeforeMethod(alwaysRun = true)
     public void setUp() throws IOException {
-        String env = System.getProperty("env", "browserstack"); // default to BrowserStack
+        String env = System.getProperty("env", "browserstack");
 
         if (env.equalsIgnoreCase("local")) {
-            System.out.println("Running test on LOCAL connected device...");
+            System.out.println("Running test on LOCAL connected iOS device...");
             setUpLocal();
         } else {
             System.out.println("Running test on BROWSERSTACK...");
@@ -43,36 +43,39 @@ public class AppTest {
     }
 
     private void setUpLocal() throws IOException {
-        UiAutomator2Options options = new UiAutomator2Options();
-        options.setDeviceName("RFCW90GG6BL"); // or specific device name from adb
-        options.setPlatformName("Android");
-        options.setAutomationName("UiAutomator2");
+        XCUITestOptions options = new XCUITestOptions(); // Use XCUITestOptions
+        options.setDeviceName("iPhone 13"); // e.g., "iPhone 13"
+        options.setPlatformName("iOS");
+        options.setAutomationName("XCUITest");
 
-        // Path to APK in your project directory
-        String appPath = System.getProperty("user.dir") + File.separator + "WikipediaSample.apk";
+        // Path to your .ipa file
+        String appPath = System.getProperty("user.dir") + File.separator + "TheApp.ipa";
         options.setApp(appPath);
-        options.setNoReset(true);
 
-        driver = new AndroidDriver(new URL("http://127.0.0.1:4723"), options);
+        // Required for local iOS setup
+        options.setCapability("udid", "YOUR_UDID_HERE"); // Replace with your device's UDID
+        options.setCapability("xcodeOrgId", "YOUR_XCODE_ORG_ID"); // Replace with your Xcode Org ID
+        options.setCapability("xcodeSigningId", "iPhone Developer");
+
+        driver = new IOSDriver(new URL("http://127.0.0.1:4723"), options);
     }
 
     private void setUpBrowserStack() throws IOException {
-        String appPath = System.getProperty("user.dir") + File.separator + "WikipediaSample.apk";
+        String appPath = System.getProperty("user.dir") + File.separator + "Contacts.ipa";
         String appUrl = uploadApp(appPath);
 
-        UiAutomator2Options options = new UiAutomator2Options();
-        options.setDeviceName("Google Pixel 6");
-        options.setPlatformVersion("12.0");
+        XCUITestOptions options = new XCUITestOptions(); // Use XCUITestOptions
+        options.setDeviceName("iPhone 13");
+        options.setPlatformVersion("17.0");
         options.setApp(appUrl);
-        options.setAutoGrantPermissions(true);
-
+        
         HashMap<String, Object> browserstackOptions = new HashMap<>();
-        browserstackOptions.put("projectName", "Android Sample Project");
-        browserstackOptions.put("buildName", "android-appium-build-1");
+        browserstackOptions.put("projectName", "iOS Sample Project");
+        browserstackOptions.put("buildName", "ios-appium-build");
         browserstackOptions.put("sessionName", "Bstack Sample Test");
         options.setCapability("bstack:options", browserstackOptions);
 
-        driver = new AndroidDriver(new URL(BROWSERSTACK_URL), options);
+        driver = new IOSDriver(new URL(BROWSERSTACK_URL), options); // Change to IOSDriver
 
         System.out.println("BrowserStack Session URL: https://automate.browserstack.com/dashboard/v2/sessions/" + driver.getSessionId());
     }
@@ -94,9 +97,21 @@ public class AppTest {
 
     @Test(description = "Verify that the search input field is displayed after clicking the search container.")
     public void test1() {
-        driver.findElement(AppiumBy.id("org.wikipedia.alpha:id/search_container")).click();
-        WebElement searchInput = driver.findElement(AppiumBy.id("org.wikipedia.alpha:id/search_src_text"));
-        Assert.assertTrue(searchInput.isDisplayed(), "Search input field was not displayed.");
+        // iOS-specific selectors
+        // Use Appium's accessibility ID for better cross-platform support where available
+        // Note: The specific IDs below are examples and might need to be verified for the actual Wikipedia iOS app.
+        // Locate the search input field using its accessibilityId.
+        WebElement searchInput = driver.findElement(AppiumBy.accessibilityId("Search for contact"));
+
+        // Click the search field to activate it.
+        searchInput.click();
+
+        // Enter the text "Chris" into the activated search field.
+        searchInput.sendKeys("Chris");
+
+        // assert 
+        Assert.assertEquals(searchInput.getText(), "Chris", "Text 'Chris' was not entered correctly.");
+
     }
 
     private String uploadApp(String appPath) throws IOException {

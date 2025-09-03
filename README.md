@@ -1,14 +1,14 @@
 # Pre Setup 
-
 Create free account on browser stack
-download android SKD and set environment variables: for local execution.
-download appium server for local execution
+
+# local setup 
+download android SKD , appium server and set environment variables
 
 # Set up
-
 update username and accesskey fields for browser stack
 
 `mvn clean install` - to fetch dependencies and run test (needed only for first time)
 
-`mvn clean test -Denv=local` - for local execution on connected phone
-`mvn clean test` - for cloud execution on connected phone
+`mvn clean test -Denv=local -Dtest=AppTest` - for local execution on connected Android phone
+`mvn test -Dtest=TheAppTest` - for Browser Stack execution of iOS Test
+`mvn test -Dtest=AppTest` - for Browser Stack execution of android Test
